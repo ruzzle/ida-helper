@@ -9,7 +9,7 @@ import idautils
 
 class IdaHelper():
 
-    def __init__(self, text_start, text_end, *args, **kwargs):
+    def __init__(self, text_start=None, text_end=None, *args, **kwargs):
         self.text_start = text_start
         self.text_end = text_end
 
@@ -22,12 +22,13 @@ class IdaHelper():
 
         text_start = text_start if text_start else self.text_start
         text_end = text_end if text_end else self.text_end
+        assert text_start and text_end, "text_start or text_end not specified"
         patterns_obj = ida_bytes.compiled_binpat_vec_t()
         encoding = ida_nalt.get_default_encoding_idx(ida_nalt.BPU_1B)
         for s in sequences:
             err = ida_bytes.parse_binpat_str(
                 patterns_obj,
-                self.text_start,
+                text_start,
                 s,
                 16, # radix (not that it matters though, since we're all about string literals)
                 encoding
@@ -84,4 +85,9 @@ class IdaHelper():
             for _ in range(abs(delta)):
                 res = idc.next_head(res)
         return res
-    
+
+    def get_operand_value(self, ea, position):
+        return idc.get_operand_value(ea, position)
+
+    def get_insn_bytes(self, ea):
+        return idc.get_bytes(ea,idc.get_item_size(ea))
